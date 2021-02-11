@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { LayoutContext } from '@suite-components';
+import { LayoutContext, Metadata } from '@suite-components';
 import AssetsCard from './components/AssetsCard';
 import PortfolioCard from './components/PortfolioCard';
 import SecurityFeatures from './components/SecurityFeatures/Container';
@@ -27,6 +27,7 @@ const Dashboard = () => {
 
     return (
         <Wrapper data-test="@dashboard/index">
+            <Metadata />
             <PortfolioCard />
             <Divider />
             <AssetsCard />
