@@ -21,6 +21,7 @@ import {
     getEffectiveGasPrice,
     getFiatRateKey,
     getNftTokenId,
+    hasUnresolvedInputs,
     isNftTokenTransfer,
     roundTimestampToNearestPastHour,
 } from '@suite-common/wallet-utils';
@@ -93,7 +94,8 @@ const formatAmounts =
             amount: formatNetworkAmount(internal.amount, symbol),
         })),
         amount: formatNetworkAmount(tx.amount, symbol),
-        fee: formatNetworkAmount(tx.fee, symbol),
+        // The fee of a transaction with unresolved inputs is unknown, not 0.
+        fee: hasUnresolvedInputs(tx) ? '' : formatNetworkAmount(tx.fee, symbol),
         targets: tx.targets.map(tr => ({
             ...tr,
             amount: formatIfDefined(tr.amount, symbol),
