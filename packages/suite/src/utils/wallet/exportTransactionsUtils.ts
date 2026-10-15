@@ -94,8 +94,7 @@ const formatAmounts =
             amount: formatNetworkAmount(internal.amount, symbol),
         })),
         amount: formatNetworkAmount(tx.amount, symbol),
-        // The fee of a transaction with unresolved inputs is unknown, not 0.
-        fee: hasUnresolvedInputs(tx) ? '' : formatNetworkAmount(tx.fee, symbol),
+        fee: formatNetworkAmount(tx.fee, symbol),
         targets: tx.targets.map(tr => ({
             ...tr,
             amount: formatIfDefined(tr.amount, symbol),
@@ -127,6 +126,23 @@ const formatAmounts =
               }
             : undefined,
     });
+
+// The fee of a transaction with unresolved inputs is unknown, not 0, and so are the values which
+// depend on it.
+const formatTransaction =
+    (symbol: NetworkSymbol) =>
+    (tx: AccountTransactionForExports): AccountTransactionForExports => {
+        const formatted = formatAmounts(symbol)(tx);
+        if (!hasUnresolvedInputs(tx)) return formatted;
+
+        return {
+            ...formatted,
+            fee: '',
+            feeRate: undefined,
+            rbfParams: undefined,
+            details: { ...formatted.details, totalInput: '' },
+        };
+    };
 
 const loadPdfMake = async () => {
     const pdfMake = (await import(/* webpackChunkName: "pdfMake" */ 'pdfmake/build/pdfmake'))
@@ -161,7 +177,7 @@ const prepareContent = (
                     txsMarkedAsNotScam,
                 }).isPhishing,
         )
-        .map(formatAmounts(symbol))
+        .map(formatTransaction(symbol))
         .flatMap(t => {
             const sharedData = {
                 date: new Intl.DateTimeFormat('default', dateFormat).format(
@@ -496,7 +512,7 @@ export const formatData = async (
             const json = JSON.stringify(
                 {
                     coin: symbol,
-                    transactions: transactions.map(formatAmounts(symbol)),
+                    transactions: transactions.map(formatTransaction(symbol)),
                 },
                 null,
                 2,
